@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOST RADAR</title>
+    <script src='https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js'></script>
+    <link href='https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css' rel='stylesheet' />
+    <style>
+        body { margin: 0; font-family: sans-serif; background: #000; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        
+        /* Panneau de contrôle */
+        #panel {
+            position: absolute; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(0, 0, 0, 0.8); color: #00ff00;
+            padding: 20px; border-radius: 15px; backdrop-filter: blur(5px);
+            border: 1px solid #00ff00; font-family: monospace;
+        }
+        input { padding: 10px; width: 60%; border-radius: 5px; border: none; }
+        button { padding: 10px; background: #00ff00; border: none; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="map"></div>
+
+    <div id="panel">
+        <h3>📡 RADAR DE SURVEILLANCE</h3>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <input type="text" id="target-id" placeholder="Entrer l'ID Cible (ex: cible_1234)">
+            <button onclick="lancerPistages()">TRAQUER</button>
+        </div>
+        <div id="infos">En attente de signal...</div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBCV9APHuPL5Csrv3DiqGBEAZgxCDOx0jI",
+            authDomain: "ghosttracker-485bf.firebaseapp.com",
+            projectId: "ghosttracker-485bf",
+            storageBucket: "ghosttracker-485bf.firebasestorage.app",
+            messagingSenderId: "915650725230",
+            appId: "1:915650725230:web:4c114d46a1f7f949706d7f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let map, marker;
+
+        // Initialisation Carte (Esri Satellite)
+        map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                'version': 8,
+                'sources': {
+                    'esri': {
+                        'type': 'raster',
+                        'tiles': ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                        'tileSize': 256
+                    }
+                },
+                'layers': [{ 'id': 'esri', 'type': 'raster', 'source': 'esri' }]
+            },
+            center: [0, 0], zoom: 2
+        });
+
+        window.lancerPistages = function() {
+            const targetID = document.getElementById('target-id').value;
+            if(!targetID) return alert("Il faut l'ID de la cible !");
+
+            document.getElementById('infos').innerText = "Recherche du signal de " + targetID + "...";
+
+            // ÉCOUTE EN TEMPS RÉEL (C'est la magie Firebase)
+            onSnapshot(doc(db, "positions", targetID), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    const lat = data.lat;
+                    const lng = data.lng;
+                    
+                    document.getElementById('infos').innerHTML = `
+                        📍 <b>LOCALISÉ !</b><br>
+                        Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}<br>
+                        🔋 Batterie: ${Math.round(data.batterie)}%<br>
+                        🚀 Vitesse: ${Math.round(data.vitesse * 3.6)} km/h
+                    `;
+
+                    // Mise à jour de la carte
+                    map.flyTo({ center: [lng, lat], zoom: 17 });
+
+                    if (!marker) {
+                        // Création d'un cercle rouge pulsant
+                        const el = document.createElement('div');
+                        el.style = 'width: 20px; height: 20px; background: red; border-radius: 50%; box-shadow: 0 0 0 10px rgba(255,0,0,0.3); animation: pulse 1s infinite;';
+                        marker = new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+                        
+                        // Ajout style animation
+                        const style = document.createElement('style');
+                        style.innerHTML = '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }';
+                        document.head.appendChild(style);
+                    } else {
+                        marker.setLngLat([lng, lat]);
+                    }
+
+                } else {
+                    document.getElementById('infos').innerText = "Cible introuvable ou hors ligne.";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
