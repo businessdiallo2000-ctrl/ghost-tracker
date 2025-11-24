@@ -4,53 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>GHOST TRACKER</title>
+    <link rel="manifest" href="/manifest.json">
     
     <script src='https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.js'></script>
     <link href='https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css' rel='stylesheet' />
     
     <style>
-        /* --- DESIGN HACKER (TON STYLE) --- */
+        /* --- DESIGN HACKER --- */
         body { background-color: #000; color: #00ff00; font-family: 'Courier New', Courier, monospace; margin: 0; overflow: hidden; height: 100vh; }
         
-        /* ÉCRAN ACCUEIL */
-        #menu-screen {
-            display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; z-index: 100; position: relative; background: #000;
-        }
+        #menu-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; z-index: 100; position: relative; background: #000; }
         h1 { border-bottom: 2px solid #00ff00; padding-bottom: 10px; margin-bottom: 30px; letter-spacing: 2px; }
-        input {
-            background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 18px; text-align: center; width: 70%; margin-bottom: 30px; border-radius: 5px; outline: none;
-        }
-        .btn-menu {
-            background: #000; border: 2px solid #00ff00; color: #00ff00; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 10px; width: 80%; text-transform: uppercase; transition: 0.2s;
-        }
+        input { background: #111; border: 1px solid #00ff00; color: #00ff00; padding: 15px; font-family: 'Courier New', Courier, monospace; font-size: 18px; text-align: center; width: 70%; margin-bottom: 30px; border-radius: 5px; outline: none; }
         
-        /* ÉCRAN MOUCHARD (Camouflé) */
+        .btn-menu { background: #000; border: 2px solid #00ff00; color: #00ff00; padding: 15px 30px; font-size: 16px; font-weight: bold; cursor: pointer; margin: 10px; width: 80%; text-transform: uppercase; transition: 0.2s; }
+        .btn-menu:active { background: #00ff00; color: #000; }
+        .btn-donate { background: #00ff00; border: 2px solid #000; color: #000; padding: 15px 30px; font-size: 16px; width: 80%; margin-top: 20px; }
+
         #tracker-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
         .loader { border: 4px solid #111; border-top: 4px solid #00ff00; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ÉCRAN RADAR */
         #radar-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         #map { width: 100%; height: 100%; }
         
-        /* Panneau infos Radar */
-        #radar-panel {
-            position: absolute; bottom: 20px; left: 20px; right: 20px;
-            background: rgba(0, 0, 0, 0.85); border: 1px solid #00ff00; padding: 15px;
-            border-radius: 10px; z-index: 50; pointer-events: none;
-        }
+        #radar-panel { position: absolute; bottom: 20px; left: 20px; right: 20px; background: rgba(0, 0, 0, 0.85); border: 1px solid #00ff00; padding: 15px; border-radius: 10px; z-index: 50; pointer-events: auto; }
         
-        /* Fenêtre de Chat */
-        #chat-window {
-            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: #111; z-index: 100; padding: 10px; display: none;
-            flex-direction: column;
-        }
-        #chat-messages {
-            flex-grow: 1; overflow-y: scroll; padding: 10px; border-bottom: 1px solid #00ff00; margin-bottom: 10px;
-        }
+        #chat-window { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #111; z-index: 100; padding: 10px; display: none; flex-direction: column; }
+        #chat-messages { flex-grow: 1; overflow-y: scroll; padding: 10px; border-bottom: 1px solid #00ff00; margin-bottom: 10px; }
         .message-in { color: #fff; background: #005500; padding: 8px; border-radius: 8px; max-width: 80%; align-self: flex-start; margin-bottom: 5px; }
         .message-out { color: #000; background: #00ff00; padding: 8px; border-radius: 8px; max-width: 80%; align-self: flex-end; margin-bottom: 5px; }
+        
+        .back-btn { position: absolute; top: 20px; left: 20px; z-index: 200; background: rgba(0,0,0,0.7); color: white; border: 1px solid white; padding: 5px 10px; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body>
@@ -61,9 +46,8 @@
         <input type="text" id="secret-id" placeholder="Ex: FINAL_TEST">
         <button class="btn-menu" onclick="lancerMode('tracker')">📡 ÉMETTRE SIGNAL</button>
         <button class="btn-menu" onclick="lancerMode('radar')">🛰️ RADAR DE SUIVI</button>
-        <button class="btn-menu btn-donate" onclick="window.open('https://www.paypal.com/ncp/payment/EQKKMXWFU6RHL', '_blank')">
-            💶 SOUTENIR LE PROJET (Paiement Direct)
-        </button>
+        <button class="btn-menu btn-donate" onclick="window.open('https://www.paypal.com/ncp/payment/EQKKMXWFU6RHL', '_blank')">💶 SOUTENIR LE PROJET</button>
+        <a href="manuel.html" style="margin-top:20px; color:#555; font-size:12px; display:block; text-align:center;">Consulter le manuel</a>
     </div>
 
     <div id="tracker-screen">
@@ -80,7 +64,10 @@
         <div id="radar-panel">
             <b style="color:#00ff00">CIBLE : <span id="target-name">...</span></b><br>
             <span id="radar-status">Recherche du signal...</span>
-            <button onclick="toggleChat(true)" style="background:red; color:white; border:none; padding:5px; margin-top:5px; font-size:12px;">🚨 CHAT D'URGENCE</button>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="toggleChat(true)" style="background:red; color:white; border:none; padding:8px; font-weight:bold; flex:1;">🚨 CHAT</button>
+                <button id="history-btn" onclick="toggleHistory()" style="background:#555; color:white; border:none; padding:8px; font-weight:bold; flex:1;">📜 HISTORIQUE</button>
+            </div>
         </div>
     </div>
     
@@ -88,16 +75,15 @@
         <button onclick="toggleChat(false)" style="background:red; color:white; border:none; padding:10px;">⬅ Retour</button>
         <div id="chat-messages"></div>
         <div style="display:flex;">
-            <input type="text" id="chat-input" placeholder="Écrire un message..." style="flex-grow:1; color:#000;">
+            <input type="text" id="chat-input" placeholder="Écrire..." style="flex-grow:1; color:#000;">
             <button onclick="sendMessage()" style="background:#00ff00; color:black; border:none; width:60px;">Envoyer</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, serverTimestamp, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, serverTimestamp, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // TA CONFIGURATION FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyBCV9APHuPL5Csrv3DiqGBEAZgxCDOx0jI",
             authDomain: "ghosttracker-485bf.firebaseapp.com",
@@ -109,36 +95,33 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        let map, marker, wakeLock = null;
-        let currentTargetID = null; // ID utilisé par l'app en cours
+        let map, marker, wakeLock = null, currentTargetID = null;
 
         window.lancerMode = async function(mode) {
             const secretID = document.getElementById('secret-id').value.trim();
             if(secretID.length < 3) { alert("Code trop court !"); return; }
-            currentTargetID = secretID; // Sauvegarder l'ID globalement
+            currentTargetID = secretID;
 
             document.getElementById('menu-screen').style.display = 'none';
-            document.getElementById('chat-window').style.display = 'none'; // Assurer qu'elle est fermée
+            document.getElementById('chat-window').style.display = 'none';
 
             if(mode === 'tracker') {
                 document.getElementById('tracker-screen').style.display = 'flex';
                 document.getElementById('current-id-display').innerText = "CODE : " + secretID;
-                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+                try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
                 activerMouchard(secretID);
-                listenForChat(secretID, 'Target'); // Le mouchard écoute les messages entrants
+                listenForChat(secretID, 'Target');
             } else {
                 document.getElementById('radar-screen').style.display = 'block';
                 document.getElementById('target-name').innerText = secretID;
                 initMap();
                 activerRadar(secretID);
-                listenForChat(secretID, 'Radar'); // Le radar écoute les messages entrants
+                listenForChat(secretID, 'Radar');
             }
         }
         
-        // FONCTION CHAT (BASÉE SUR L'ID COURANT)
         window.toggleChat = function(show) {
             document.getElementById('chat-window').style.display = show ? 'flex' : 'none';
-            // Cacher la carte/tracker quand le chat est ouvert
             document.getElementById('radar-screen').style.display = show ? 'none' : (document.getElementById('target-name').innerText ? 'block' : 'none');
             document.getElementById('tracker-screen').style.display = show ? 'none' : 'flex';
         }
@@ -147,56 +130,43 @@
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
             if(!message) return;
-
             const senderRole = document.getElementById('radar-screen').style.display === 'block' ? 'Radar' : 'Target';
-
             try {
-                // Écrire dans une sous-collection de l'ID cible
                 await setDoc(doc(db, "chats", currentTargetID, "messages", String(Date.now())), {
-                    sender: senderRole,
-                    text: message,
-                    timestamp: serverTimestamp()
+                    sender: senderRole, text: message, timestamp: serverTimestamp()
                 });
                 input.value = '';
-            } catch (e) {
-                console.error("Erreur envoi chat:", e);
-                alert("Erreur envoi chat (Vérifie la connexion et les règles Firebase)");
-            }
+            } catch (e) { alert("Erreur envoi chat"); }
         }
 
         function listenForChat(id, userRole) {
             const messagesDiv = document.getElementById('chat-messages');
             const chatRef = collection(db, "chats", id, "messages");
             const q = query(chatRef, orderBy("timestamp", "asc"), limit(20));
-
             onSnapshot(q, (snapshot) => {
-                // Vider les anciens messages si c'est le premier chargement ou effacer les données
                 messagesDiv.innerHTML = ''; 
-
                 snapshot.forEach((doc) => {
-                    const messageData = doc.data();
-                    const sender = messageData.sender;
-                    const isOutgoing = (userRole === 'Radar' && sender === 'Radar') || (userRole === 'Target' && sender === 'Target');
-                    
-                    const messageElement = document.createElement('div');
-                    messageElement.className = isOutgoing ? 'message-out' : 'message-in';
-                    messageElement.innerText = `${sender}: ${messageData.text}`;
-                    
-                    messagesDiv.appendChild(messageElement);
+                    const d = doc.data();
+                    const isOutgoing = (userRole === 'Radar' && d.sender === 'Radar') || (userRole === 'Target' && d.sender === 'Target');
+                    const el = document.createElement('div');
+                    el.className = isOutgoing ? 'message-out' : 'message-in';
+                    el.innerText = `${d.sender}: ${d.text}`;
+                    messagesDiv.appendChild(el);
                 });
-                messagesDiv.scrollTop = messagesDiv.scrollHeight; // Scroll vers le bas
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
             });
         }
         
-        // Reste des fonctions de tracking et map (inchangé)
         function activerMouchard(id) {
             const statusDiv = document.getElementById('status-text');
             if (!navigator.geolocation) { statusDiv.innerText = "Erreur: Pas de GPS"; return; }
+            let intervalId = null;
+            let lastPosition = {};
 
             navigator.geolocation.watchPosition(async (pos) => {
+                lastPosition = pos;
                 statusDiv.innerText = "Signal envoyé... 🟢";
                 statusDiv.style.color = "#00ff00";
-                
                 try {
                     await setDoc(doc(db, "positions", id), {
                         lat: pos.coords.latitude, lng: pos.coords.longitude, vitesse: pos.coords.speed || 0,
@@ -204,22 +174,30 @@
                     });
                     setTimeout(() => statusDiv.style.color = "#555", 500);
                 } catch (e) { statusDiv.innerText = "Erreur Connexion"; }
+            }, (err) => { statusDiv.innerText = "GPS Perdu"; statusDiv.style.color = "red"; }, { enableHighAccuracy: true });
 
-            }, (err) => { statusDiv.innerText = "GPS Perdu / Bloqué"; statusDiv.style.color = "red"; }, { enableHighAccuracy: true });
+            if (!intervalId) {
+                intervalId = setInterval(async () => {
+                    if (lastPosition.coords) {
+                        try {
+                            const histRef = collection(db, "positions", id, "history");
+                            await setDoc(doc(histRef, String(Date.now())), { 
+                                lat: lastPosition.coords.latitude, lng: lastPosition.coords.longitude, timestamp: serverTimestamp()
+                            });
+                        } catch (e) {}
+                    }
+                }, 30000);
+            }
         }
 
-        async function getBatteryLevel() {
-            try { const b = await navigator.getBattery(); return b.level * 100; } catch(e) { return 0; }
-        }
+        async function getBatteryLevel() { try { const b = await navigator.getBattery(); return b.level * 100; } catch(e) { return 0; } }
 
         function initMap() {
             map = new maplibregl.Map({
                 container: 'map',
                 style: {
                     'version': 8,
-                    'sources': {
-                        'google': { 'type': 'raster', 'tiles': ['https://mt0.google.com/vt/lyrs=y&hl=fr&x={x}&y={y}&z={z}'], 'tileSize': 256 }
-                    },
+                    'sources': { 'google': { 'type': 'raster', 'tiles': ['https://mt0.google.com/vt/lyrs=y&hl=fr&x={x}&y={y}&z={z}'], 'tileSize': 256 } },
                     'layers': [{ 'id': 'google', 'type': 'raster', 'source': 'google' }]
                 },
                 center: [0, 0], zoom: 2
@@ -233,23 +211,55 @@
                     const data = doc.data();
                     infoDiv.innerHTML = `📍 LOCALISÉ !<br>🔋 Bat: ${Math.round(data.batterie)}%`;
                     map.flyTo({ center: [data.lng, data.lat], zoom: 18 });
-
                     if (!marker) {
                         const el = document.createElement('div');
                         el.style = 'width:20px; height:20px; background:red; border-radius:50%; box-shadow:0 0 0 10px rgba(255,0,0,0.3); animation:pulse 1s infinite;';
                         marker = new maplibregl.Marker({ element: el }).setLngLat([data.lng, data.lat]).addTo(map);
-                        
                         const style = document.createElement('style');
                         style.innerHTML = '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }';
                         document.head.appendChild(style);
-                    } else {
-                        marker.setLngLat([data.lng, data.lat]);
-                    }
-                } else {
-                    infoDiv.innerText = "En attente du signal...";
-                    infoDiv.style.color = "orange";
-                }
+                    } else { marker.setLngLat([data.lng, data.lat]); }
+                } else { infoDiv.innerText = "Recherche..."; infoDiv.style.color = "orange"; }
             });
+        }
+
+        // --- LOGIQUE HISTORIQUE ---
+        let historiqueActif = false;
+        let historiquePolyline = null; 
+
+        window.toggleHistory = async function() {
+            historiqueActif = !historiqueActif;
+            const btn = document.getElementById("history-btn");
+            
+            if (historiqueActif) {
+                btn.innerText = "Chargement...";
+                await drawHistory(currentTargetID);
+                btn.innerText = "Masquer Historique";
+                btn.style.background = 'green';
+            } else {
+                btn.innerText = "📜 HISTORIQUE";
+                btn.style.background = '#555';
+                if (map.getLayer('historique-layer')) {
+                    map.removeLayer('historique-layer');
+                    map.removeSource('historique-path');
+                }
+            }
+        }
+
+        async function drawHistory(id) {
+            const historiqueRef = collection(db, "positions", id, "history");
+            const q = query(historiqueRef, orderBy("timestamp", "desc"), limit(500));
+            const querySnapshot = await getDocs(q);
+            const coordinates = [];
+            querySnapshot.forEach((doc) => { const d = doc.data(); coordinates.push([d.lng, d.lat]); });
+            coordinates.reverse();
+
+            if (coordinates.length > 1) {
+                if (map.getLayer('historique-layer')) { map.removeLayer('historique-layer'); map.removeSource('historique-path'); }
+                map.addSource('historique-path', { 'type': 'geojson', 'data': { 'type': 'Feature', 'geometry': { 'type': 'LineString', 'coordinates': coordinates } } });
+                map.addLayer({ 'id': 'historique-layer', 'type': 'line', 'source': 'historique-path', 'layout': { 'line-join': 'round', 'line-cap': 'round' }, 'paint': { 'line-color': '#00ffff', 'line-width': 4, 'line-opacity': 0.8 } });
+                map.fitBounds(maplibregl.LngLatBounds.convert(coordinates));
+            }
         }
     </script>
 </body>
