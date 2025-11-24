@@ -9,7 +9,7 @@
     <link href='https://unpkg.com/maplibre-gl@3.6.0/dist/maplibre-gl.css' rel='stylesheet' />
     
     <style>
-        /* --- DESIGN HACKER (INCHANGÉ) --- */
+        /* --- DESIGN HACKER --- */
         body { background-color: #000; color: #00ff00; font-family: 'Courier New', Courier, monospace; margin: 0; overflow: hidden; height: 100vh; }
         
         /* ÉCRAN ACCUEIL */
@@ -30,6 +30,12 @@
             text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;
         }
         .btn-menu:active { background: #00ff00; color: #000; }
+
+        /* BOUTON MONÉTISATION (Primaire) */
+        .btn-donate {
+            background: #00ff00; border: 2px solid #000; color: #000; /* Couleurs inversées pour le paiement */
+            padding: 15px 30px; font-size: 16px; width: 80%; margin-top: 20px;
+        }
 
         /* ÉCRAN MOUCHARD (Camouflé) */
         #tracker-screen { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; }
@@ -58,10 +64,17 @@
 
     <div id="menu-screen">
         <h1>GHOST TRACKER</h1>
+        
         <label>ENTRER CODE SECRET :</label>
         <input type="text" id="secret-id" placeholder="Ex: HACK">
+        
         <button class="btn-menu" onclick="lancerMode('tracker')">📡 ÉMETTRE SIGNAL</button>
         <button class="btn-menu" onclick="lancerMode('radar')">🛰️ RADAR DE SUIVI</button>
+        
+        <button class="btn-menu btn-donate" onclick="window.open('https://www.paypal.com/ncp/payment/EQKKMXWFU6RHL', '_blank')">
+            💶 SOUTENIR LE PROJET (Paiement Direct)
+        </button>
+        <a href="manuel.html" style="margin-top:20px; color:#555; font-size:12px; display:block; text-align:center;">Consulter le manuel</a>
     </div>
 
     <div id="tracker-screen">
@@ -101,6 +114,7 @@
 
         window.lancerMode = async function(mode) {
             const secretID = document.getElementById('secret-id').value.trim();
+            
             if(secretID.length < 3) { alert("Code trop court !"); return; }
 
             document.getElementById('menu-screen').style.display = 'none';
@@ -108,11 +122,10 @@
             if(mode === 'tracker') {
                 document.getElementById('tracker-screen').style.display = 'flex';
                 document.getElementById('current-id-display').innerText = "CODE : " + secretID;
-                // DEMANDER WAKE LOCK (Anti-Sommeil)
+                
                 try {
                     if ('wakeLock' in navigator) {
                         wakeLock = await navigator.wakeLock.request('screen');
-                        console.log("Écran maintenu éveillé");
                     }
                 } catch (err) { console.log("Wake Lock erreur:", err); }
                 
@@ -133,18 +146,17 @@
             navigator.geolocation.watchPosition(async (pos) => {
                 statusDiv.innerText = "Signal envoyé... 🟢";
                 statusDiv.style.color = "#00ff00";
+                
                 try {
                     await setDoc(doc(db, "positions", id), {
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        vitesse: pos.coords.speed || 0,
-                        batterie: await getBatteryLevel(),
-                        last_seen: serverTimestamp()
+                        lat: pos.coords.latitude, lng: pos.coords.longitude, vitesse: pos.coords.speed || 0,
+                        batterie: await getBatteryLevel(), last_seen: serverTimestamp()
                     });
                     setTimeout(() => statusDiv.style.color = "#555", 500);
                 } catch (e) { statusDiv.innerText = "Erreur Connexion"; }
+
             }, (err) => {
-                statusDiv.innerText = "GPS Perdu. Vérifie tes paramètres.";
+                statusDiv.innerText = "GPS Perdu / Bloqué";
                 statusDiv.style.color = "red";
             }, { enableHighAccuracy: true });
         }
@@ -171,14 +183,21 @@
         function activerRadar(id) {
             onSnapshot(doc(db, "positions", id), (doc) => {
                 const infoDiv = document.getElementById('radar-status');
+                
                 if (doc.exists()) {
                     const data = doc.data();
-                    infoDiv.innerHTML = `📍 LOCALISÉ !<br>🔋 Bat: ${Math.round(data.batterie)}%`;
+                    infoDiv.innerHTML = `
+                        📍 LOCALISÉ !<br>
+                        Bat: ${Math.round(data.batterie)}%
+                    `;
+                    
                     map.flyTo({ center: [data.lng, data.lat], zoom: 18 });
+
                     if (!marker) {
                         const el = document.createElement('div');
                         el.style = 'width:20px; height:20px; background:red; border-radius:50%; box-shadow:0 0 0 10px rgba(255,0,0,0.3); animation:pulse 1s infinite;';
                         marker = new maplibregl.Marker({ element: el }).setLngLat([data.lng, data.lat]).addTo(map);
+                        
                         const style = document.createElement('style');
                         style.innerHTML = '@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255,0,0,0.7); } 70% { box-shadow: 0 0 0 20px rgba(255,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(255,0,0,0); } }';
                         document.head.appendChild(style);
